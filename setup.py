@@ -19,17 +19,21 @@ c.execute('''CREATE TABLE member
               spouse_id integer REFERENCES member(id),
               OccupationType varchar NOT NULL,
               AnnualIncome integer NOT NULL,
+              DOB date NOT NULL,
               FOREIGN KEY(household_id) REFERENCES household(id),
               CHECK (Gender = "M" OR Gender = "F"),
               CHECK (MaritalStatus = "Married" OR Gender = "Single"),
               CHECK (OccupationType = "Unemployed" OR OccupationType = "Student" OR OccupationType = "Employed"),
               CHECK (AnnualIncome >= 0))
               ''')
+# Add some fake data.
+household_data = [(1, 'HDB'), (2, 'Landed'), (3, 'Condominium')]
+c.executemany('INSERT INTO household VALUES (?, ?)', household_data)
 
+
+#c.execute('''INSERT INTO household(HouseholdType) VALUES ('HDB'),('Landed')''')
 
 conn.commit()
-
-# Add some fake data.
 
 
 
