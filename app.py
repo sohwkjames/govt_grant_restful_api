@@ -13,19 +13,31 @@ def view_households():
     cur = conn.cursor()
     query = ("SELECT * FROM household")
     cur.execute(query)
-
     row_headers=[x[0] for x in cur.description] #this will extract row headers
     rv = cur.fetchall() # gets list of row values
-    print("rv:", rv)
     json_data=[]
     for result in rv:
         json_data.append(dict(zip(row_headers,result)))
-    print(json_data)
-    return jsonify(json_data)
-
+    cur.close()
+    return jsonify({"stores":json_data})
 
 
 # GET, list a specific household by household ID
+@app.route('/household/<int:household_id>', methods=['GET'])
+def view_single_household(household_id):
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+    print("Before execute")
+    cur.execute("SELECT * FROM household WHERE id=?", (household_id,))
+    print("After execute")
+    row_headers=[x[0] for x in cur.description] #this will extract row headers
+    rv = cur.fetchall() # gets list of row values
+
+    json_data=[]
+    for result in rv:
+        json_data.append(dict(zip(row_headers,result)))
+    cur.close()
+    return jsonify(json_data)
 
 
 # POST, create a household
