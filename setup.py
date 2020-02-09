@@ -4,14 +4,14 @@ conn = sqlite3.connect('households.db')
 c = conn.cursor()
 
 c.execute('''CREATE TABLE household
-             (id integer PRIMARY KEY,
+             (HouseholdID integer PRIMARY KEY,
               HouseholdType varchar NOT NULL,
               CHECK (HouseholdType = "Landed" OR HouseholdType = "Condominium" OR HouseholdType = "HDB"))''')
 
 conn.commit()
 
 c.execute('''CREATE TABLE member
-             (id integer PRIMARY KEY,
+             (MemberID integer PRIMARY KEY,
               HouseholdID integer,
               Name varchar,
               YOB integer,

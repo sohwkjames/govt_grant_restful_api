@@ -11,7 +11,7 @@ DB_NAME = 'households.db'
 def view_households():
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
-    query = ("SELECT * FROM member LEFT JOIN household on member.HouseholdID = household.id")
+    query = ("SELECT * FROM member LEFT JOIN household on member.HouseholdID = household.HouseholdID")
     cur.execute(query)
     row_headers=[x[0] for x in cur.description] #this will extract row headers
     rv = cur.fetchall() # gets list of row values
@@ -27,7 +27,7 @@ def view_single_household(household_id):
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
     print("Before execute")
-    cur.execute("SELECT * FROM member LEFT JOIN household on member.HouseholdID = household.id WHERE member.HouseholdID = ?",
+    cur.execute("SELECT * FROM member LEFT JOIN household on member.HouseholdID = household.HouseholdID WHERE member.HouseholdID = ?",
                 (household_id,))
     print("After execute")
     row_headers=[x[0] for x in cur.description] #this will extract row headers
