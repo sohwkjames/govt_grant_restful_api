@@ -14,18 +14,22 @@ c.execute('''CREATE TABLE member
              (id integer PRIMARY KEY,
               HouseholdID integer,
               Name varchar,
-              YOB integer,
+              Gender varchar,
               MaritalStatus varchar,
-              Spouse integer,
+              SpouseID integer,
               OccupationType varchar,
               AnnualIncome integer,
-              Gender varchar,
               FOREIGN KEY(HouseholdID) REFERENCES household(id),
               CHECK (Gender = "M" OR Gender = "F"),
-              CHECK (MaritalStatus = "Married" OR MaritalStatus = "Single"),
-              CHECK (OccupationType = "Unemployed" OR OccupationType = "Student" OR OccupationType = "Employed")
-              )''')
+              CHECK (MaritalStatus = "Married" OR Gender = "Single"),
+              CHECK (OccupationType = "Unemployed" OR OccupationType = "Student" OR OccupationType = "Employed"),
+              CHECK (AnnualIncome >= 0))
+              ''')
 # Add some fake data.
+household_data = [(1, 'HDB'), (2, 'Landed'), (3, 'Condominium')]
+c.executemany('INSERT INTO household VALUES (?, ?)', household_data)
+
+
 #c.execute('''INSERT INTO household(HouseholdType) VALUES ('HDB'),('Landed')''')
 
 conn.commit()
