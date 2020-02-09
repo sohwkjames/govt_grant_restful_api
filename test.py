@@ -18,9 +18,9 @@ for body in body_list:
 
 # Test sending a POST request to add members to household
 body_list = [{"HouseholdID":1, "Name":"James", "YOB":1991, "MaritalStatus":"Married",
-        "Spouse":2, "OccupationType":"Employed", "AnnualIncome":50000, "Gender":"M"},
+        "Spouse":2, "OccupationType":"Employed", "AnnualIncome":30000, "Gender":"M"},
         {"HouseholdID":1, "Name":"Jane", "YOB":1995, "MaritalStatus":"Married",
-        "Spouse":1, "OccupationType":"Employed", "AnnualIncome":60000, "Gender":"F"},
+        "Spouse":1, "OccupationType":"Employed", "AnnualIncome":40000, "Gender":"F"},
         {"HouseholdID":2, "Name":"Dave", "YOB":1981, "MaritalStatus":"Single",
         "Spouse":0, "OccupationType":"Unemployed", "AnnualIncome":3000, "Gender":"M"}]
 

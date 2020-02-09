@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 import json
 import sqlite3
+import datetime
 
 app = Flask(__name__)
 
@@ -8,7 +9,7 @@ DB_NAME = 'households.db'
 
 # GET, view all households, return a json. Endpoint 3.
 @app.route('/household', methods=['GET'])
-def view_households():
+def viewHouseholds():
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
     query = ("SELECT * FROM member LEFT JOIN household on member.HouseholdID = household.HouseholdID")
@@ -23,13 +24,11 @@ def view_households():
 
 # GET, list a specific household by household ID, returns a json. Endpoint 4.
 @app.route('/household/<int:household_id>', methods=['GET'])
-def view_single_household(household_id):
+def viewSingleHousehold(household_id):
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
-    print("Before execute")
     cur.execute("SELECT * FROM member LEFT JOIN household on member.HouseholdID = household.HouseholdID WHERE member.HouseholdID = ?",
                 (household_id,))
-    print("After execute")
     row_headers=[x[0] for x in cur.description] #this will extract row headers
     rv = cur.fetchall() # gets list of row values
     json_data=[]
@@ -40,12 +39,11 @@ def view_single_household(household_id):
 
 # POST, create a new household. Endpoint 1.
 @app.route('/household', methods=['POST'])
-def add_household():
+def addHousehold():
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
     # Example of expected json: {"HouseholdType":"HDB"}
     incoming_json = request.get_json()
-    print(incoming_json['HouseholdType'])
     cur.execute('INSERT INTO household(HouseholdType) VALUES (?)', (incoming_json['HouseholdType'],))
     conn.commit()
     cur.close()
@@ -53,11 +51,10 @@ def add_household():
 
 # POST, create a member, add to household. Endpoint 2.
 @app.route('/member', methods=['POST'])
-def add_member():
+def addMember():
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
     incoming_json = request.get_json()
-    print("Before execute")
     cur.execute('INSERT INTO member(HouseholdID, Name, YOB, MaritalStatus, Spouse, OccupationType, AnnualIncome, Gender) VALUES(?,?,?,?,?,?,?,?)',
                 (incoming_json['HouseholdID'], incoming_json['Name'], incoming_json['YOB'],
                  incoming_json['MaritalStatus'], incoming_json['Spouse'], incoming_json['OccupationType'],
@@ -67,8 +64,67 @@ def add_member():
     return jsonify(success=True)
 
 
+# GET, Search for households and receipent of grand disbursement. Takes household size, income. Endpoint 5.
+# Returns families and households that qualify for the grant, given the constraints of max household and max income.
+@app.route('/testing/<int:maxHouseholdSize>/<int:maxHouseholdIncome>', methods=['GET'])
+def testFunction(maxHouseholdSize, maxHouseholdIncome):
+    if maxHouseholdSize == 0:
+        maxHouseholdSize = 99
+    if maxHouseholdIncome == 0:
+        # Set max income to some large number.
+        maxHouseholdIncome = (2**31)-1
+    allGrantResults = []
+    allGrantResults.append(getYoloGstGrant(maxHouseholdSize, maxHouseholdIncome))
+    allGrantResults.append(getBabySunshineGrant(maxHouseholdSize, maxHouseholdIncome))
+    print("all Grant results", allGrantResults)
+    return jsonify(allGrantResults)
 
 
+def getYoloGstGrant(maxHouseholdSize, maxHouseholdIncome):
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+    # Get YOLO GST Grant: HDB Households, sum annual income <= 100,000
+    lowerIncome = min(maxHouseholdIncome, 100000)
+    cur.execute('''SELECT household.HouseholdID, household.HouseholdType, SUM(AnnualIncome) FROM member
+                LEFT JOIN household on member.HouseholdID = household.HouseholdID
+                GROUP BY member.HouseholdID HAVING SUM(AnnualIncome) < (?)
+                AND household.HouseholdType = "HDB"''', (lowerIncome,))
+    row_headers=[x[0] for x in cur.description]
+    rv = cur.fetchall()
+    json_data=[]
+    for result in rv:
+        json_data.append(dict(zip(row_headers,result)))
+    cur.close()
+    return {"Yolo GST Grant":json_data}
+    return jsonify(allGrantResults)
+
+def getBabySunshineGrant(maxHouseholdSize, maxHouseholdIncome):
+    # Returns households and members who are younger than 5.
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+    curr_year = datetime.datetime.now().year
+    cur.execute('''SELECT *, (?) - YOB as Age FROM member WHERE Age < 5''', (curr_year,))
+    row_headers=[x[0] for x in cur.description]
+    rv = cur.fetchall()
+    json_data=[]
+    for result in rv:
+        json_data.append(dict(zip(row_headers,result)))
+    cur.close()
+    return {"Baby Sunshine Grant":json_data}
+
+def getElderBonusGrant(maxHouseholdSize, maxHouseholdIncome):
+    # Returns households and members who are younger than 5.
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+    curr_year = datetime.datetime.now().year
+    cur.execute('''SELECT *, (?) - YOB as Age FROM member WHERE Age > 50''', (curr_year,))
+    row_headers=[x[0] for x in cur.description]
+    rv = cur.fetchall()
+    json_data=[]
+    for result in rv:
+        json_data.append(dict(zip(row_headers,result)))
+    cur.close()
+    return {"Baby Sunshine Grant":json_data}
 
 
 app.run(port=5000, debug=True)
