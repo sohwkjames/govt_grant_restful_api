@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 import json
 import sqlite3
 
@@ -19,10 +19,9 @@ def view_households():
     for result in rv:
         json_data.append(dict(zip(row_headers,result)))
     cur.close()
-    return jsonify({"stores":json_data})
+    return jsonify({"households":json_data})
 
-
-# GET, list a specific household by household ID
+# GET, list a specific household by household ID, returns a json.
 @app.route('/household/<int:household_id>', methods=['GET'])
 def view_single_household(household_id):
     conn = sqlite3.connect(DB_NAME)
@@ -32,18 +31,38 @@ def view_single_household(household_id):
     print("After execute")
     row_headers=[x[0] for x in cur.description] #this will extract row headers
     rv = cur.fetchall() # gets list of row values
-
     json_data=[]
     for result in rv:
         json_data.append(dict(zip(row_headers,result)))
     cur.close()
     return jsonify(json_data)
 
+# POST
+@app.route('/household', methods=['POST'])
+def add_household():
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+    # Example of expected json: {"HouseholdType":"HDB"}
+    incoming_json = request.get_json()
+    print(incoming_json['HouseholdType'])
+    cur.execute('INSERT INTO household(HouseholdType) VALUES (?)', (incoming_json['HouseholdType'],))
+    conn.commit()
+    cur.close()
+    return jsonify(success=True)
 
-# POST, create a household
 
-
-# POST, add member to a household.
+# POST, create a member, add to household.
+@app.route('/member', methods=['POST'])
+def add_household():
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+    # Example of expected json: {"HouseholdType":"HDB"}
+    incoming_json = request.get_json()
+    print(incoming_json['HouseholdType'])
+    cur.execute('INSERT INTO household(HouseholdType) VALUES (?)', (incoming_json['HouseholdType'],))
+    conn.commit()
+    cur.close()
+    return jsonify(success=True)
 
 
 
