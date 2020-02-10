@@ -36,5 +36,5 @@ Python version: 3.6.6
 
 ### Assumptions
 
-For endpoint 5, accepting search parameters: The search parameters act as additional restrictions on households that will be returned in the endpoint. For example, if a household qualifies for Elder Bonus and earns $100,000 annual income, that household will not be returned if we call /grants/0/99999.
+For endpoint 5, accepting search parameters: The search parameters act as additional restrictions on households that will be returned in the endpoint. For example, if a household qualifies for Elder Bonus and earns $100,000 annual income, that household will not be returned if we call `/grants/0/99999`.
 
