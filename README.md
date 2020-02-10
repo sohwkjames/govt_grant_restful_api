@@ -30,7 +30,7 @@ https://mislav.net/rails/install-sqlite3/
 |---------------------|------|----------------------------------------------------------------------------------------------------------------------------------------------------|
 | /household/         | POST | Expects a json                                                                                                                                     |
 | /household/         | GET  |                                                                                                                                                    |
-| /household/<int>    | GET  |                                                                                                                                                    |
+| /household/int    | GET  | Takes the Household ID you wish to look up as integer in the endpoint.                                                                                                                                                   |
 | /member/            | POST | Expects a json                                                                                                                                     |
-| /grants/<int>/<int> | GET  | Expects 2 integers as search parameters: Maximum household size, and maximum household income.   Use /grants/0/0 to not use any search parameters. |
+| /grants/int/int | GET  | Expects 2 integers as search parameters: Maximum household size, and maximum household income.   Use /grants/0/0 to not use any search parameters. |
 
