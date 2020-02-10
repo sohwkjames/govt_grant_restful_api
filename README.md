@@ -24,7 +24,13 @@ https://mislav.net/rails/install-sqlite3/
 
 `python simulate.py`
 
+### Endpoints
 
-
-
+| Endpoint            | Verb | Details                                                                                                                                            |
+|---------------------|------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| /household/         | POST | Expects a json                                                                                                                                     |
+| /household/         | GET  |                                                                                                                                                    |
+| /household/<int>    | GET  |                                                                                                                                                    |
+| /member/            | POST | Expects a json                                                                                                                                     |
+| /grants/<int>/<int> | GET  | Expects 2 integers as search parameters: Maximum household size, and maximum household income.   Use /grants/0/0 to not use any search parameters. |
 
