@@ -2,8 +2,6 @@ Python version: 3.6.6
 
 ### Steps to setup this app locally
 
-Steps to run this app locally:
-
 1. Install flask.
 
 `$ pip install flask`
