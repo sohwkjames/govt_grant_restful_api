@@ -79,6 +79,7 @@ def viewGrants(maxHouseholdSize, maxHouseholdIncome):
     allGrantResults.append(getBabySunshineGrant(maxHouseholdSize, maxHouseholdIncome))
     allGrantResults.append(getElderBonusGrant(maxHouseholdSize, maxHouseholdIncome))
     allGrantResults.append(getStudentEncouragementBonus(maxHouseholdSize, maxHouseholdIncome))
+    allGrantResults.append(getFamilyTogetherness(maxHouseholdSize, maxHouseholdIncome))
 
     print("all Grant results", allGrantResults)
     return jsonify(allGrantResults)
@@ -133,7 +134,7 @@ def getElderBonusGrant(maxHouseholdSize, maxHouseholdIncome):
     for result in rv:
         json_data.append(dict(zip(row_headers,result)))
     cur.close()
-    return {"Elder Bonus Grant":json_data}
+    return {"Elder Bonus":json_data}
 
 def getStudentEncouragementBonus(maxHouseholdSize, maxHouseholdIncome):
     conn = sqlite3.connect(DB_NAME)
@@ -151,6 +152,24 @@ def getStudentEncouragementBonus(maxHouseholdSize, maxHouseholdIncome):
         json_data.append(dict(zip(row_headers,result)))
     cur.close()
     return {"Student Encouragement Bonus":json_data}
+
+def getFamilyTogetherness(maxHouseholdSize, maxHouseholdIncome):
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+    curr_year = datetime.datetime.now().year
+
+    cur.execute('''SELECT *, (?) - YOB as Age FROM member WHERE Age < 18 AND Spouse <> 0 AND HouseholdID in
+                    ( SELECT HouseholdID FROM member GROUP BY HouseholdID having sum(AnnualIncome) < (?)
+                        AND count(MemberID) < (?))''', (curr_year,maxHouseholdIncome, maxHouseholdSize))
+
+    row_headers=[x[0] for x in cur.description]
+    rv = cur.fetchall()
+    json_data=[]
+    for result in rv:
+        json_data.append(dict(zip(row_headers,result)))
+    cur.close()
+    return {"Family Togetherness Scheme":json_data}
+
 
 app.run(port=5000, debug=True)
 
