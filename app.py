@@ -7,6 +7,10 @@ app = Flask(__name__)
 
 DB_NAME = 'households.db'
 
+@app.route('/')
+def displayWelcome():
+    return "Welcome! Please refer to the readme to view all endpoints."
+
 # GET, view all households, return a json. Endpoint 3.
 @app.route('/household', methods=['GET'])
 def viewHouseholds():
