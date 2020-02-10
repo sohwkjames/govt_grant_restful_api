@@ -22,8 +22,7 @@ Steps to run this app locally:
 
 `$ python simulate.py`
 
-6. After server is started, the API can be called using the path localhost:3000/.
-
+6. After server is started, the API can be called using the path http://localhost:5000/.
 
 
 ### Endpoints
