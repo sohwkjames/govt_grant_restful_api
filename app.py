@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 import json
 import sqlite3
 import datetime
-
+import urllib.request
 app = Flask(__name__)
 
 DB_NAME = 'households.db'
@@ -66,16 +66,20 @@ def addMember():
 
 # GET, Search for households and receipent of grand disbursement. Takes household size, income. Endpoint 5.
 # Returns families and households that qualify for the grant, given the constraints of max household and max income.
-@app.route('/testing/<int:maxHouseholdSize>/<int:maxHouseholdIncome>', methods=['GET'])
-def testFunction(maxHouseholdSize, maxHouseholdIncome):
+@app.route('/grants/<int:maxHouseholdSize>/<int:maxHouseholdIncome>', methods=['GET'])
+def viewGrants(maxHouseholdSize, maxHouseholdIncome):
+
+    if maxHouseholdIncome == 0:
+        maxHouseholdIncome = 2 ** 30
     if maxHouseholdSize == 0:
         maxHouseholdSize = 99
-    if maxHouseholdIncome == 0:
-        # Set max income to some large number.
-        maxHouseholdIncome = (2**31)-1
+
     allGrantResults = []
     allGrantResults.append(getYoloGstGrant(maxHouseholdSize, maxHouseholdIncome))
     allGrantResults.append(getBabySunshineGrant(maxHouseholdSize, maxHouseholdIncome))
+    allGrantResults.append(getElderBonusGrant(maxHouseholdSize, maxHouseholdIncome))
+    allGrantResults.append(getStudentEncouragementBonus(maxHouseholdSize, maxHouseholdIncome))
+
     print("all Grant results", allGrantResults)
     return jsonify(allGrantResults)
 
@@ -84,11 +88,11 @@ def getYoloGstGrant(maxHouseholdSize, maxHouseholdIncome):
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
     # Get YOLO GST Grant: HDB Households, sum annual income <= 100,000
-    lowerIncome = min(maxHouseholdIncome, 100000)
+    maxHouseholdIncome = min(maxHouseholdIncome, 100000)
     cur.execute('''SELECT household.HouseholdID, household.HouseholdType, SUM(AnnualIncome) FROM member
                 LEFT JOIN household on member.HouseholdID = household.HouseholdID
                 GROUP BY member.HouseholdID HAVING SUM(AnnualIncome) < (?)
-                AND household.HouseholdType = "HDB"''', (lowerIncome,))
+                AND household.HouseholdType = "HDB" AND count(MemberID) <= (?)''', (maxHouseholdIncome, maxHouseholdSize))
     row_headers=[x[0] for x in cur.description]
     rv = cur.fetchall()
     json_data=[]
@@ -103,7 +107,9 @@ def getBabySunshineGrant(maxHouseholdSize, maxHouseholdIncome):
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
     curr_year = datetime.datetime.now().year
-    cur.execute('''SELECT *, (?) - YOB as Age FROM member WHERE Age < 5''', (curr_year,))
+    cur.execute('''SELECT *, (?) - YOB as Age FROM member WHERE Age < 5 AND HouseholdID IN
+                    (SELECT HouseholdID FROM member GROUP BY HouseholdID HAVING sum(AnnualIncome) < (?)
+                    AND count(MemberID) <= (?))''', (curr_year, maxHouseholdIncome, maxHouseholdSize))
     row_headers=[x[0] for x in cur.description]
     rv = cur.fetchall()
     json_data=[]
@@ -117,14 +123,37 @@ def getElderBonusGrant(maxHouseholdSize, maxHouseholdIncome):
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
     curr_year = datetime.datetime.now().year
-    cur.execute('''SELECT *, (?) - YOB as Age FROM member WHERE Age > 50''', (curr_year,))
+
+    cur.execute('''SELECT *, (?) - YOB as Age FROM member WHERE Age > 50 AND HouseholdID IN
+                    (SELECT HouseholdID FROM member GROUP BY HouseholdID HAVING sum(AnnualIncome) < (?)
+                     AND count(MemberID) <= (?))''', (curr_year, maxHouseholdIncome, maxHouseholdSize))
     row_headers=[x[0] for x in cur.description]
     rv = cur.fetchall()
     json_data=[]
     for result in rv:
         json_data.append(dict(zip(row_headers,result)))
     cur.close()
-    return {"Baby Sunshine Grant":json_data}
+    return {"Elder Bonus Grant":json_data}
 
+def getStudentEncouragementBonus(maxHouseholdSize, maxHouseholdIncome):
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+    curr_year = datetime.datetime.now().year
+
+    cur.execute('''SELECT *, (?) - YOB as Age FROM member WHERE Age < 16 AND HouseholdID in
+                    ( SELECT HouseholdID FROM member GROUP BY HouseholdID having sum(AnnualIncome) < (?)
+                        AND count(MemberID) < (?))''', (curr_year,maxHouseholdIncome, maxHouseholdSize))
+
+    row_headers=[x[0] for x in cur.description]
+    rv = cur.fetchall()
+    json_data=[]
+    for result in rv:
+        json_data.append(dict(zip(row_headers,result)))
+    cur.close()
+    return {"Student Encouragement Bonus":json_data}
 
 app.run(port=5000, debug=True)
+
+
+ #FROM member WHERE EXISTS
+#(SELECT *, SUM(AnnualIncome) FROM member GROUP BY HouseholdID HAVING AnnualIncome < 5000)''', (curr_year,))
