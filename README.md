@@ -20,7 +20,7 @@ Python version: 3.6.6
 
 `$ python simulate.py`
 
-6. After server is started, the API can be called using the path http://localhost:5000/.
+6. The API can be called using the path http://localhost:5000/.
 
 
 ### Endpoints
