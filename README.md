@@ -38,6 +38,29 @@ Flask version: 1.0.2
 | /removemember/int | GET  | Expects an integer as MemberID. Removes the MemberID from it's household by setting the HouseholdID of the member to 0. |
 
 
+### Schema details
+
+Table household
+
+| Field name    | Type    | Details                                                                                    |
+|---------------|---------|--------------------------------------------------------------------------------------------|
+| HouseholdID   | integer | Primary Key                                                                                |
+| HouseholdType | varchar | CHECK (HouseholdType = "Landed" OR HouseholdType = "Condominium" OR HouseholdType = "HDB") |
+
+Table member
+
+| Field name     | Type    | Details                                                                                            |
+|----------------|---------|----------------------------------------------------------------------------------------------------|
+| MemberID       | integer | Primary Key                                                                                        |
+| HouseholdID    | integer | FOREIGN KEY(HouseholdID) REFERENCES household(id),                                                 |
+| Name           | varchar |                                                                                                    |
+| YOB            | Integer |                                                                                                    |
+| MaritalStatus  | varchar | CHECK (MaritalStatus = "Married" OR MaritalStatus = "Single"),                                     |
+| Spouse         | integer |                                                                                                    |
+| OccupationType | varchar | CHECK (OccupationType = "Unemployed" OR OccupationType = "Student" OR OccupationType = "Employed") |
+| AnnualIncome   | integer |                                                                                                    |
+| Gender         | varchar | CHECK (Gender = "M" OR Gender = "F"),                                                              |
+
 ### Assumptions
 
 For endpoint 5, accepting search parameters: The search parameters act as additional restrictions on households that will be returned in the endpoint. For example, if a household qualifies for Elder Bonus and earns $100,000 annual income, that household will not be returned if we call `/grants/0/99999`.
