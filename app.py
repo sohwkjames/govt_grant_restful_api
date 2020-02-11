@@ -88,6 +88,26 @@ def viewGrants(maxHouseholdSize, maxHouseholdIncome):
     print("all Grant results", allGrantResults)
     return jsonify(allGrantResults)
 
+# delete all records of family member belonging to a HouseholdID. Delete the record of that householdID.
+@app.route('/deletehouse/<int:HouseholdID>', methods=['GET'])
+def deleteHousehold(HouseholdID):
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+    cur.execute("DELETE FROM member WHERE HouseholdID= (?)", (HouseholdID,))
+    conn.commit()
+    cur.close()
+    return jsonify(success=True)
+
+# Remove a family member from it's household by setting HouseholdID to 0.
+@app.route('/removemember/<int:MemberID>', methods=['GET'])
+def removeMember(MemberID):
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+    cur.execute("UPDATE member SET HouseholdID = 0 WHERE MemberID = (?)", (MemberID,))
+    conn.commit()
+    cur.close()
+    return jsonify(success=True)
+
 
 def getYoloGstGrant(maxHouseholdSize, maxHouseholdIncome):
     conn = sqlite3.connect(DB_NAME)
@@ -173,6 +193,8 @@ def getFamilyTogetherness(maxHouseholdSize, maxHouseholdIncome):
         json_data.append(dict(zip(row_headers,result)))
     cur.close()
     return {"Family Togetherness Scheme":json_data}
+
+
 
 
 app.run(port=5000, debug=True)
