@@ -34,6 +34,8 @@ Flask version: 1.0.2
 | /household/int    | GET  | Takes the Household ID you wish to look up as integer in the endpoint.                                                                                                                                                   |
 | /member/            | POST | Expects a json                                                                                                                                     |
 | /grants/int/int | GET  | Expects 2 integers as search parameters: Maximum household size, and maximum household income.   Use /grants/0/0 to not use any search parameters. |
+| /deletehouse/int | GET  | Expects an integer as HouseholdID to delete. Deletes all members in member table that has the HouseholdID. |
+| /removemember/int | GET  | Expects an integer as MemberID. Removes the MemberID from it's household by setting the HouseholdID of the member to 0. |
 
 
 ### Assumptions
